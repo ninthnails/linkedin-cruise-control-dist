@@ -1,0 +1,40 @@
+version: 2
+jobs:
+  build:
+    environment:
+      _JAVA_OPTIONS: "-Xms512m -Xmx1024m"
+    working_directory: ~/workspace
+    docker:
+      - image: circleci/openjdk:8-jdk
+    steps:
+      - run:
+          command: curl -sL -o cruise.tar.gz https://github.com/linkedin/cruise-control/archive/2.0.72.tar.gz
+      - run:
+          command: tar xfz cruise.tar.gz
+      - run:
+          command: git init
+          paths:
+            - cruise-control-2.0.72/
+      - run:
+          command: ./gradlew -PmaxParallelForks=1 --console=plain build
+          paths:
+            - cruise-control-2.0.72/
+      - run:
+          command: ./gradlew --console=plain jar distributeBuild
+          paths:
+            - cruise-control-2.0.72/
+      - run:
+          command: rm -fr build.gradle buildSrc/ checkstyle/ cruise-control/src/ cruise-control/build/classes/ cruise-control/build/resources/ cruise-control/build/tmp/ cruise-control-core/src/ cruise-control-core/build/classes/ cruise-control-core/build/resources/ cruise-control-core/build/tmp/ cruise-control-metrics-reporter/src/ cruise-control-metrics-reporter/build/classes/ cruise-control-metrics-reporter/build/resources/ cruise-control-metrics-reporter/build/tmp/ docs/ gradle/ gradle.properties gradlew gradlew.bat semantic-build-versioning.gradle settings.gradle
+          paths:
+            - cruise-control-2.0.72/
+      - run:
+          command: tar cfz linkedin-cruise-control-2.0.72.tgz cruise-control-2.0.72
+      - store_artifacts:
+          path: linkedin-cruise-control-2.0.72.tgz
+
+workflows:
+  version: 2
+  build:
+    jobs:
+      - build:
+
