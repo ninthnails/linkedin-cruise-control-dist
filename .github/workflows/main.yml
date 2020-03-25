@@ -17,8 +17,11 @@ jobs:
         with:
           java-version: 1.8
 
-      - name: Echo Git ref
-        run: echo ${{ github.ref }}; echo $GITHUB_REF
+      - name: Extract tag name
+        run: echo "::set-env name=TAG::${GITHUB_REF##*/}"
+
+      - name: Echo
+        run: echo $GITHUB_REF; echo $TAG
 
       - name: Checkout LinkedIn Cruise Control for Apache Kafka
         uses: actions/checkout@v2
