@@ -25,22 +25,22 @@ jobs:
         with:
            repository: linkedin/cruise-control
            ref: ${{ github.ref }}
-           path: cruise-control
+           path: cruise-control-$TAG
       
       - name: Build main distribution
         run: ./gradlew --console=plain jar
-        working-directory: cruise-control
+        working-directory: cruise-control-$TAG
 
       - name: Build metrics distribution
         run: ./gradlew --console=plain jar copyDependantLibs
-        working-directory: cruise-control
+        working-directory: cruise-control-$TAG
       
       - name: Remove source and compiled files
         run: rm -fr .circleci/ .git/ .gradle/ build.gradle buildSrc/ checkstyle/ cruise-control/src/ cruise-control/build/classes/ cruise-control/build/resources/ cruise-control/build/tmp/ cruise-control-core/src/ cruise-control-core/build/classes/ cruise-control-core/build/resources/ cruise-control-core/build/tmp/ cruise-control-metrics-reporter/src/ cruise-control-metrics-reporter/build/classes/ cruise-control-metrics-reporter/build/resources/ cruise-control-metrics-reporter/build/tmp/ docs/ gradle/ gradle.properties gradlew gradlew.bat semantic-build-versioning.gradle settings.gradle
-        working-directory: cruise-control
+        working-directory: cruise-control-$TAG
       
       - name: Archive distribution
-        run: mv cruise-control/ cruise-control-$TAG/ && tar cfz linkedin-cruise-control-$TAG.tgz cruise-control-$TAG
+        run: tar cfz linkedin-cruise-control-$TAG.tgz cruise-control-$TAG
       
       - name: Create a Release
         id: create_release
@@ -48,8 +48,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: $TAG
-          release_name: $TAG
+          tag_name: ${{ env.TAG }}
+          release_name: ${{ env.TAG }}
       
       - name: Upload a Release Asset
         uses: actions/upload-release-asset@v1.0.2
@@ -57,6 +57,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: linkedin-cruise-control-$TAG.tgz
-          asset_name: linkedin-cruise-control-$TAGw.tgz
+          asset_path: linkedin-cruise-control-${{ env.TAG }}.tgz
+          asset_name: linkedin-cruise-control-${{ env.TAG }}.tgz
           asset_content_type: application/x-gzip
